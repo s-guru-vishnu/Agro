@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertilizers - Agro Farmer Portal</title>
+    {% load static %}
+    {% csrf_token %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fertilizers-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-btn:hover {
+            background: white;
+            color: #2e7d32;
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-controls input,
+        .filter-controls select {
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-controls button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .filter-controls button:hover {
+            background: #1b5e20;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .product-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2e7d32;
+            margin: 0;
+        }
+        
+        .availability-badge {
+            background: #4caf50;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .availability-badge.unavailable {
+            background: #f44336;
+        }
+        
+        .product-description {
+            color: #666;
+            margin: 1rem 0;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        
+        .product-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .price-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+        
+        .unit {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .quantity-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .location-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-primary {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            flex: 1;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #1b5e20;
+        }
+        
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #2e7d32;
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .no-results i {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #c62828;
+        }
+    </style>
+</head>
+<body>
+    <div class="machines-container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-tractor"></i> Rental Machines Available</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Find the best farming equipment for rent</p>
+            </div>
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <div class="filter-section">
+            <h3 style="margin-top: 0; margin-bottom: 1rem;">Filter by Location</h3>
+            <div class="filter-controls">
+                <input type="text" id="cityFilter" placeholder="Enter city name (e.g., Pune, Coimbatore)">
+                <button onclick="loadMachines()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button onclick="clearFilters()" style="background: #666;">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <div id="errorMessage" style="display: none;" class="error-message"></div>
+
+        <div id="machinesGrid" class="product-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading machines...
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function getCSRFToken() {
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) return csrfInput.value;
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) return metaToken.getAttribute('content');
+            return null;
+        }
+
+        function loadMachines() {
+            const grid = document.getElementById('machinesGrid');
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+
+            grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading machines...</div>';
+
+            const city = document.getElementById('cityFilter').value.trim();
+            let apiUrl = '/api/rental-machines/';
+            const params = new URLSearchParams();
+            if (city) params.append('city', city);
+            if (params.toString()) apiUrl += '?' + params.toString();
+
+            fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() || '',
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Machines data received:', data);
+                if (data.success && data.machines && data.machines.length > 0) {
+                    renderMachines(data.machines);
+                } else {
+                    grid.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No machines found</h3>
+                            <p>Try adjusting your search filters or check back later.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading machines:', error);
+                errorDiv.textContent = 'Error loading machines: ' + error.message;
+                errorDiv.style.display = 'block';
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error loading machines</h3>
+                        <p>Please try again later.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderMachines(machines) {
+            const grid = document.getElementById('machinesGrid');
+            grid.innerHTML = '';
+
+            machines.forEach(machine => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const location = machine.location || {};
+                const price = machine.price || 0;
+                const unit = machine.unit || 'per hour';
+                const quantity = machine.quantity || 0;
+                const availability = machine.availability !== false;
+
+                card.innerHTML = `
+                    <div class="product-header">
+                        <h3 class="product-name">${machine.name || 'Unnamed Machine'}</h3>
+                        <span class="availability-badge ${availability ? '' : 'unavailable'}">
+                            ${availability ? 'Available' : 'Unavailable'}
+                        </span>
+                    </div>
+
+                    <p class="product-description">
+                        ${machine.description || 'No description available.'}
+                    </p>
+
+                    <div class="product-details">
+                        <div class="price-info">
+                            <span class="price">₹${price.toFixed(2)}</span>
+                            <span class="unit">${unit}</span>
+                        </div>
+                        <div class="quantity-info">
+                            <strong>Available:</strong> ${quantity} units
+                        </div>
+                    </div>
+
+                    ${location.address || location.city ? `
+                        <div class="location-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${location.address || ''} ${location.city || ''} ${location.state || ''} ${location.pincode || ''}</span>
+                        </div>
+                    ` : ''}
+
+                    <div class="product-actions">
+                        <button class="btn-primary" onclick="contactSeller('${machine._id}', '${machine.name || ''}')">
+                            <i class="fas fa-phone"></i> Contact Owner
+                        </button>
+                        <button class="btn-secondary" onclick="viewDetails('${machine._id}')">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function contactSeller(machineId, machineName) {
+            alert(`Contacting owner for: ${machineName}\n\nThis feature will be implemented to connect you with the owner.`);
+        }
+
+        function viewDetails(machineId) {
+            alert(`Viewing details for machine ID: ${machineId}\n\nThis feature will show detailed information about the machine.`);
+        }
+
+        function clearFilters() {
+            document.getElementById('cityFilter').value = '';
+            loadMachines();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMachines();
+            document.getElementById('cityFilter').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadMachines();
+                }
+            });
+        });
+    </script>
+</body>

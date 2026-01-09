@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Schemes - AGRO</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="navbar-container"></div>
+  
+  <div class="page-container">
+    <div class="page-main-wrapper">
+      <main class="page-main">
+        <div class="page-header">
+          <h1 data-testid="text-schemes-title">
+            Government Schemes
+          </h1>
+          <p>
+            Browse and apply for agricultural subsidies, insurance, and support programs
+          </p>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="search-input"
+            class="input"
+            placeholder="Search schemes..."
+          />
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-sm category-btn" data-category="all">All</button>
+            <button class="btn btn-sm btn-outline category-btn" data-category="subsidy">Subsidy</button>
+            <button class="btn btn-sm btn-outline category-btn" data-category="insurance">Insurance</button>
+            <button class="btn btn-sm btn-outline category-btn" data-category="training">Training</button>
+            <button class="btn btn-sm btn-outline category-btn" data-category="loan">Loan</button>
+          </div>
+        </div>
+
+        <div id="schemes-list" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div style="text-align: left; color: hsl(var(--muted-foreground)); padding: 2rem;">
+            Loading schemes...
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <div id="footer-container"></div>
+  <div id="cart-sheet-container"></div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/schemes-page.js"></script>
+</body>
+</html>
+

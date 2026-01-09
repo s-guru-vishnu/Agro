@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertilizers - Agro Farmer Portal</title>
+    {% load static %}
+    {% csrf_token %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="fertilizers-container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-seedling"></i> Fertilizers Available</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Find quality fertilizers for your crops</p>
+            </div>
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <div class="filter-section">
+            <h3 style="margin-top: 0; margin-bottom: 1rem;">Filter by Location</h3>
+            <div class="filter-controls">
+                <input type="text" id="cityFilter" placeholder="Enter city name (e.g., Madurai, Salem)">
+                <button onclick="loadFertilizers()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button onclick="clearFilters()" class="btn-clear">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <div id="errorMessage" style="display: none;" class="error-message"></div>
+
+        <div id="fertilizersGrid" class="product-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading fertilizers...
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function getCSRFToken() {
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) return csrfInput.value;
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) return metaToken.getAttribute('content');
+            return null;
+        }
+
+        function loadFertilizers() {
+            const grid = document.getElementById('fertilizersGrid');
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+
+            grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading fertilizers...</div>';
+
+            const city = document.getElementById('cityFilter').value.trim();
+            let apiUrl = '/api/get-availability/?type=fertilizer';
+            if (city) apiUrl += '&city=' + encodeURIComponent(city);
+            
+            // Add location if available
+            const userLat = localStorage.getItem('userLatitude');
+            const userLon = localStorage.getItem('userLongitude');
+            if (userLat && userLon) {
+                apiUrl += '&latitude=' + userLat + '&longitude=' + userLon + '&radius=50';
+            }
+
+            fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() || '',
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Fertilizers data received:', data);
+                if (data.success && data.fertilizers && data.fertilizers.length > 0) {
+                    renderFertilizers(data.fertilizers);
+                } else {
+                    grid.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No fertilizers found</h3>
+                            <p>Try adjusting your search filters or check back later.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading fertilizers:', error);
+                errorDiv.textContent = 'Error loading fertilizers: ' + error.message;
+                errorDiv.style.display = 'block';
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error loading fertilizers</h3>
+                        <p>Please try again later.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderFertilizers(fertilizersList) {
+            const grid = document.getElementById('fertilizersGrid');
+            grid.innerHTML = '';
+
+            fertilizersList.forEach(fertilizer => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const location = fertilizer.location || {};
+                const price = fertilizer.price || 0;
+                const quantity = fertilizer.quantity || 0;
+                const availability = fertilizer.availability !== false;
+
+                card.innerHTML = `
+                    <div class="product-header">
+                        <h3 class="product-name">${fertilizer.name || 'Unnamed Fertilizer'}</h3>
+                        <span class="availability-badge ${availability ? '' : 'unavailable'}">
+                            ${availability ? 'Available' : 'Unavailable'}
+                        </span>
+                    </div>
+
+                    <p class="product-description">
+                        ${fertilizer.description || 'No description available.'}
+                    </p>
+
+                    <div class="product-details">
+                        <div class="price-info">
+                            <span class="price">₹${price.toFixed(2)}</span>
+                            <span class="unit">per unit</span>
+                        </div>
+                        <div class="quantity-info">
+                            <strong>Quantity:</strong> ${quantity} units
+                        </div>
+                    </div>
+
+                    ${location.address || location.city ? `
+                        <div class="location-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${location.address || ''} ${location.city || ''} ${location.state || ''} ${location.pincode || ''}</span>
+                            ${fertilizer.distance_km ? `<span style="color: var(--primary-color); font-weight: 600; margin-left: 0.5rem;">(${fertilizer.distance_km} km away)</span>` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="product-actions">
+                        <button class="btn-primary" onclick="contactSeller('${fertilizer._id}', '${fertilizer.name || ''}')">
+                            <i class="fas fa-phone"></i> Contact Seller
+                        </button>
+                        <button class="btn-secondary" onclick="viewDetails('${fertilizer._id}')">
+                            <i class="fas fa-info-circle"></i> Details
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function contactSeller(sellerId, productName) {
+            // Feature to be implemented
+        }
+
+        function viewDetails(productId) {
+            // Feature to be implemented
+        }
+
+        function clearFilters() {
+            document.getElementById('cityFilter').value = '';
+            loadFertilizers();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFertilizers();
+            document.getElementById('cityFilter').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadFertilizers();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

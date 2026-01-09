@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Features - AGRO</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="navbar-container"></div>
+  
+  <div class="page-container">
+    <div class="page-main-wrapper">
+      <main class="page-main" style="padding: 1.5rem;">
+        <div style="display: flex; flex-direction: column; gap: 3rem; padding-bottom: 3rem; padding-top: 0; width: 100%; box-sizing: border-box;">
+          
+          <section
+            id="hero-section"
+            class="hero-3d"
+            style="
+              position: relative;
+              height: 500px;
+              max-height: 60vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              border-radius: 0.5rem;
+              margin: 0;
+              width: 100%;
+              max-width: 100%;
+              overflow: hidden;
+              transition: transform 0.2s;
+              transform-style: preserve-3d;
+              background-image: url('../assets/Hero Section Image.png');
+              background-size: cover;
+              background-position: center;
+              background-repeat: no-repeat;
+              background-color: hsl(var(--muted));
+              box-sizing: border-box;
+            "
+            data-testid="hero-section"
+          >
+            <div style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(2px);"></div>
+            <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), transparent, rgba(0, 0, 0, 0.4));"></div>
+            
+            <div style="position: relative; z-index: 10; text-align: center; padding: 4rem 1rem; width: 100%; display: flex; flex-direction: column; align-items: center;">
+              <div style="margin-bottom: 1rem; filter: drop-shadow(0 10px 8px rgba(0, 0, 0, 0.3)); display: flex; justify-content: center; transform: translateZ(40px);">
+                <img 
+                  src="../assets/Logo.jpg" 
+                  alt="AGRO Logo" 
+                  style="height: 6rem; width: 6rem; object-fit: contain;"
+                  onerror="this.onerror=null; if(this.src.includes('Logo.jpg')) { this.src='../assets/logo.png'; } else if(this.src.includes('.png')) { this.src='../assets/logo.jpg'; } else { this.style.display='none'; }"
+                />
+              </div>
+              <h1
+                style="
+                  font-size: 2.25rem;
+                  font-weight: bold;
+                  margin-bottom: 1rem;
+                  color: white;
+                  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+                  transform: translateZ(30px);
+                  text-align: center;
+                "
+                data-testid="text-hero-title"
+              >
+                Welcome to AGRO
+              </h1>
+              <p
+                style="
+                  font-size: 1.125rem;
+                  color: rgba(255, 255, 255, 0.9);
+                  max-width: 42rem;
+                  margin: 0 auto 2rem auto;
+                  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+                  transform: translateZ(20px);
+                  text-align: center;
+                "
+                data-testid="text-hero-description"
+              >
+                Your complete agriculture platform for weather forecasting, marketplace, equipment rental, government schemes, and community support.
+              </p>
+              <a href="marketplace.html" data-testid="link-get-started" style="transform: translateZ(25px); display: inline-block;">
+                <button class="btn btn-lg">
+                  Get Started
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 0.5rem;">
+                    <path d="M5 12h14"></path>
+                    <path d="m12 5 7 7-7 7"></path>
+                  </svg>
+                </button>
+              </a>
+            </div>
+          </section>
+
+          
+          <div style="padding: 0;">
+            <h2 style="font-size: 1.875rem; font-weight: bold; margin-bottom: 2rem; text-align: left;" data-testid="text-features-title">
+              Platform Features
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; width: 100%;" id="features-grid">
+              
+            </div>
+          </div>
+
+          
+          <div style="padding: 3rem 1rem; background-color: hsl(var(--primary) / 0.05); width: 100%; border-radius: 0.5rem; box-sizing: border-box;">
+            <div style="max-width: 100%; margin: 0 auto; text-align: center; padding: 0;">
+              <h2 style="font-size: 1.875rem; font-weight: bold; margin-bottom: 1rem; text-align: center;" data-testid="text-cta-title">
+                Ready to Transform Your Farming Experience?
+              </h2>
+              <p style="font-size: 1.125rem; color: hsl(var(--muted-foreground)); margin-bottom: 2rem; text-align: center;">
+                Join thousands of farmers using AGRO to improve productivity and connect with the agricultural community.
+              </p>
+              <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; align-items: center;">
+                <a href="/signup.html" data-testid="link-signup-cta">
+                  <button class="btn btn-lg">Sign Up Now</button>
+                </a>
+                <a href="/index.html" data-testid="link-chatbot-cta">
+                  <button class="btn btn-lg btn-outline">Try Chatbot</button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <div id="footer-container"></div>
+  <div id="cart-sheet-container"></div>
+
+  <script src="../js/app.js"></script>
+  <script src="../js/components.js"></script>
+  <script src="../js/features-page.js"></script>
+</body>
+</html>
+

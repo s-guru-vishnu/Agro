@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sellers - Agro Farmer Portal</title>
+    {% load static %}
+    {% csrf_token %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="fertilizers-container">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-store"></i> Sellers</h1>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Connect with verified sellers and suppliers</p>
+            </div>
+            <a href="/" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <div class="filter-section">
+            <h3 style="margin-top: 0; margin-bottom: 1rem;">Filter by Location</h3>
+            <div class="filter-controls">
+                <input type="text" id="cityFilter" placeholder="Enter city name (e.g., Madurai, Salem)">
+                <button onclick="loadSellers()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button onclick="clearFilters()" class="btn-clear">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <div id="errorMessage" style="display: none;" class="error-message"></div>
+
+        <div id="sellersGrid" class="product-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading sellers...
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        function getCSRFToken() {
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrfInput) return csrfInput.value;
+            const metaToken = document.querySelector('meta[name="csrf-token"]');
+            if (metaToken) return metaToken.getAttribute('content');
+            return null;
+        }
+
+        function loadSellers() {
+            const grid = document.getElementById('sellersGrid');
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'none';
+
+            grid.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading sellers...</div>';
+
+            const city = document.getElementById('cityFilter').value.trim();
+            let apiUrl = '/api/get-availability/?type=seller';
+            if (city) apiUrl += '&city=' + encodeURIComponent(city);
+            
+            // Add location if available
+            const userLat = localStorage.getItem('userLatitude');
+            const userLon = localStorage.getItem('userLongitude');
+            if (userLat && userLon) {
+                apiUrl += '&latitude=' + userLat + '&longitude=' + userLon + '&radius=50';
+            }
+
+            fetch(apiUrl, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() || '',
+                }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Sellers data received:', data);
+                if (data.success && data.sellers && data.sellers.length > 0) {
+                    renderSellers(data.sellers);
+                } else {
+                    grid.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No sellers found</h3>
+                            <p>Try adjusting your search filters or check back later.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading sellers:', error);
+                errorDiv.textContent = 'Error loading sellers: ' + error.message;
+                errorDiv.style.display = 'block';
+                grid.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <h3>Error loading sellers</h3>
+                        <p>Please try again later.</p>
+                    </div>
+                `;
+            });
+        }
+
+        function renderSellers(sellersList) {
+            const grid = document.getElementById('sellersGrid');
+            grid.innerHTML = '';
+
+            sellersList.forEach(seller => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+
+                const location = seller.location || {};
+                const rating = seller.rating || 0;
+                const productsCount = seller.products_count || 0;
+
+                card.innerHTML = `
+                    <div class="product-header">
+                        <h3 class="product-name">${seller.name || seller.seller_name || 'Unnamed Seller'}</h3>
+                        <span class="availability-badge">
+                            ${seller.verified ? '<i class="fas fa-check-circle"></i> Verified' : 'Seller'}
+                        </span>
+                    </div>
+
+                    <p class="product-description">
+                        ${seller.description || seller.bio || 'No description available.'}
+                    </p>
+
+                    <div class="product-details">
+                        <div class="rating-info">
+                            <span class="price"><i class="fas fa-star"></i> ${rating.toFixed(1)}</span>
+                            <span class="unit">Rating</span>
+                        </div>
+                        <div class="quantity-info">
+                            <strong>Products:</strong> ${productsCount} available
+                        </div>
+                    </div>
+
+                    ${seller.contact ? `
+                        <div class="contact-info">
+                            <i class="fas fa-phone"></i>
+                            <span>${seller.contact.phone || 'N/A'}</span>
+                            ${seller.contact.email ? `<span style="margin-left: 1rem;"><i class="fas fa-envelope"></i> ${seller.contact.email}</span>` : ''}
+                        </div>
+                    ` : ''}
+
+                    ${location.address || location.city ? `
+                        <div class="location-info">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>${location.address || ''} ${location.city || ''} ${location.state || ''} ${location.pincode || ''}</span>
+                            ${seller.distance_km ? `<span style="color: var(--primary-color); font-weight: 600; margin-left: 0.5rem;">(${seller.distance_km} km away)</span>` : ''}
+                        </div>
+                    ` : ''}
+
+                    <div class="product-actions">
+                        <button class="btn-primary" onclick="contactSeller('${seller._id || seller.id}', '${seller.name || seller.seller_name || ''}')">
+                            <i class="fas fa-phone"></i> Contact
+                        </button>
+                        <button class="btn-secondary" onclick="viewSellerDetails('${seller._id || seller.id}')">
+                            <i class="fas fa-info-circle"></i> View Profile
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function contactSeller(sellerId, sellerName) {
+            alert(`Contact feature for ${sellerName} will be implemented soon.`);
+            // Feature to be implemented
+        }
+
+        function viewSellerDetails(sellerId) {
+            alert(`View details for seller ${sellerId} will be implemented soon.`);
+            // Feature to be implemented
+        }
+
+        function clearFilters() {
+            document.getElementById('cityFilter').value = '';
+            loadSellers();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSellers();
+            document.getElementById('cityFilter').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    loadSellers();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+

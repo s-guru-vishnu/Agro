@@ -1,0 +1,14 @@
+Django>=5.2.8
+pymongo>=4.15.4
+django-cors-headers>=4.3.0
+requests>=2.31.0
+python-decouple>=3.8
+openai-whisper>=20231117
+librosa>=0.10.0
+soundfile>=0.12.0
+
+
+
+
+
+

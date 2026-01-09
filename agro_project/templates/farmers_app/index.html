@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agro Farmer Portal</title>
+    {% load static %}
+    {% csrf_token %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    
+    <div id="popupLocation" class="popup-overlay">
+        <div class="popup-content" style="max-width: 600px;">
+            <div class="popup-header">
+                <i class="fas fa-map-marker-alt"></i>
+                <h2>Location Setup</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem;">Are you on your land now?</p>
+            <div class="popup-buttons">
+                <button class="btn btn-primary" onclick="handleLocationChoice(true)">Yes, I'm on my land</button>
+                <button class="btn btn-secondary" onclick="handleLocationChoice(false)">No, select from map</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="popupMap" class="popup-overlay" style="display: none;">
+        <div class="popup-content" style="max-width: 800px; max-height: 90vh;">
+            <div class="popup-header">
+                <i class="fas fa-map"></i>
+                <h2>Select Your Land Location</h2>
+            </div>
+            <p style="margin-bottom: 1rem;">Click on the map to select your land location:</p>
+            <div id="mapContainer" style="width: 100%; height: 400px; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; border: 2px solid var(--border-color);"></div>
+            <div style="margin-bottom: 1rem; padding: 0.8rem; background: var(--card-bg); border-radius: 8px;">
+                <p style="margin: 0; font-weight: 500;"><i class="fas fa-info-circle"></i> Selected Location:</p>
+                <p id="selectedLocationText" style="margin: 0.5rem 0 0 0; color: var(--text-secondary);">Click on the map to select</p>
+            </div>
+            <div class="popup-buttons">
+                <button class="btn btn-secondary" onclick="goBackToLocationQuestion()">Back</button>
+                <button class="btn btn-primary" onclick="confirmMapLocation()" id="confirmMapBtn" disabled>Confirm Location</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="popupPlanting" class="popup-overlay" style="display: none;">
+        <div class="popup-content">
+            <div class="popup-header">
+                <i class="fas fa-seedling"></i>
+                <h2>Planting Status</h2>
+            </div>
+            <p style="margin-bottom: 1.5rem;">Have you planted your crops?</p>
+            <div class="popup-buttons">
+                <button class="btn btn-primary" onclick="handlePlantingStatus(true)">Yes, I have planted</button>
+                <button class="btn btn-secondary" onclick="handlePlantingStatus(false)">No, not yet</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="main-container">
+        
+        <header class="main-header">
+            <div class="logo">
+                <i class="fas fa-tractor"></i>
+                <h1>Agro Farmer Portal</h1>
+            </div>
+            <div class="theme-toggle-container">
+                <span class="theme-toggle-label">Light</span>
+                <div class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+                    <div class="theme-toggle-slider">
+                        <i class="fas fa-sun theme-toggle-icon"></i>
+                    </div>
+                </div>
+                <span class="theme-toggle-label">Dark</span>
+            </div>
+        </header>
+
+        
+        <div class="main-layout">
+            
+            <div class="left-sidebar">
+                
+                <div class="availability-card">
+                    <div class="card-header">
+                        <i class="fas fa-leaf"></i>
+                        <h3>Fertilizer Availability</h3>
+                        <a href="{% url 'fertilizers_page' %}" class="view-all-link" title="View all fertilizers">
+                            <i class="fas fa-arrow-right"></i> View All
+                        </a>
+                    </div>
+                    <div class="card-content" id="fertilizerContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                
+                <div class="availability-card">
+                    <div class="card-header">
+                        <i class="fas fa-tractor"></i>
+                        <h3>Machine Availability</h3>
+                        <a href="{% url 'machines_page' %}" class="view-all-link" title="View all machines">
+                            <i class="fas fa-arrow-right"></i> View All
+                        </a>
+                    </div>
+                    <div class="card-content" id="machineContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+
+                
+                <div class="availability-card">
+                    <div class="card-header">
+                        <i class="fas fa-users"></i>
+                        <h3>Manpower Availability</h3>
+                        <a href="{% url 'manpower_page' %}" class="view-all-link" title="View all manpower">
+                            <i class="fas fa-arrow-right"></i> View All
+                        </a>
+                    </div>
+                    <div class="card-content" id="manpowerContent">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="center-chatbot">
+                <div class="chatbot-container">
+                    <div class="chatbot-header">
+                        <div class="chatbot-title">
+                            <i class="fas fa-robot"></i>
+                            <h2>AI Farming Assistant</h2>
+                        </div>
+                        <p class="chatbot-subtitle">Ask me anything about fertilizers, machines, manpower, or crops!</p>
+                        <div class="chatbot-controls">
+                            <div class="language-selector">
+                                <label for="languageSelect" style="color: white; margin-right: 0.5rem; font-size: 0.9rem;">
+                                    <i class="fas fa-globe"></i> Language:
+                                </label>
+                                <select id="languageSelect" class="language-select" onchange="changeLanguage()" title="Select language for voice input">
+                                    <option value="en">English</option>
+                                    <option value="hi">हिंदी (Hindi)</option>
+                                    <option value="bn">বাংলা (Bengali)</option>
+                                    <option value="te">తెలుగు (Telugu)</option>
+                                    <option value="mr">मराठी (Marathi)</option>
+                                    <option value="ta">தமிழ் (Tamil)</option>
+                                    <option value="gu">ગુજરાતી (Gujarati)</option>
+                                    <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                                    <option value="ml">മലയാളം (Malayalam)</option>
+                                    <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                                    <option value="or">ଓଡ଼ିଆ (Odia)</option>
+                                    <option value="ur">اردو (Urdu)</option>
+                                    <option value="as">অসমীয়া (Assamese)</option>
+                                    <option value="ne">नेपाली (Nepali)</option>
+                                </select>
+                            </div>
+                            <button class="location-btn" onclick="requestLocationAndWeather()" title="Get weather for your location">
+                                <i class="fas fa-map-marker-alt"></i> Get My Location & Weather
+                            </button>
+                        </div>
+                    </div>
+                    <div class="chatbot-messages" id="chatbotMessages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <p>Hello! I'm your farming assistant. How can I help you today? You can ask me about:</p>
+                                <ul class="help-list">
+                                    <li>🌿 Fertilizer availability and recommendations</li>
+                                    <li>🚜 Machine rentals (tractors, harvesters, etc.)</li>
+                                    <li>👥 Manpower and labor services</li>
+                                    <li>🌾 Crop management and advice</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chatbot-input-container">
+                        <div class="voice-input-wrapper">
+                            <input type="text" id="chatInput" class="chat-input voice-input" placeholder="Type or speak your message...">
+                            <button class="voice-btn" onclick="startVoiceInput('chatInput')" title="Click to use voice input">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                        </div>
+                        <button class="send-btn" onclick="sendMessage()" title="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="right-sidebar">
+                <div class="welcome-section">
+                    <h2>Welcome, Farmer!</h2>
+                    <p>Your one-stop solution for all farming needs</p>
+                </div>
+
+                <div class="features-grid">
+                    <a href="{% url 'fertilizers_page' %}" class="feature-card" title="Go to Fertilizer page">
+                        <i class="fas fa-leaf"></i>
+                        <h3>Fertilizer</h3>
+                        <p>Find available fertilizers</p>
+                    </a>
+                    <a href="{% url 'machines_page' %}" class="feature-card" title="Go to Machines page">
+                        <i class="fas fa-cog"></i>
+                        <h3>Machines</h3>
+                        <p>Rent farming equipment</p>
+                    </a>
+                    <a href="{% url 'manpower_page' %}" class="feature-card" title="Go to Manpower page">
+                        <i class="fas fa-users"></i>
+                        <h3>Manpower</h3>
+                        <p>Connect with workers</p>
+                    </a>
+                    <a href="/chatbot/" class="feature-card" title="Go to AI Assistant">
+                        <i class="fas fa-robot"></i>
+                        <h3>AI Help</h3>
+                        <p>Get instant assistance</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get CSRF token from Django
+        function getCSRFToken() {
+            const cookieValue = getCookie('csrftoken');
+            if (cookieValue) {
+                return cookieValue;
+            }
+            // Fallback: try to get from meta tag or input
+            const metaTag = document.querySelector('meta[name=csrf-token]');
+            if (metaTag) {
+                return metaTag.getAttribute('content');
+            }
+            const input = document.querySelector('input[name=csrfmiddlewaretoken]');
+            if (input) {
+                return input.value;
+            }
+            return '';
+        }
+        
+        // Helper function to get cookie value
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+    <script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
